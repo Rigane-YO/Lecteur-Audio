@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
-import { PlayerState, PlayerAction, Track } from '../types';
+import { PlayerState, PlayerAction} from '../types';
 
 const initialState: PlayerState = {
   currentTrack: null,
@@ -16,8 +16,9 @@ const initialState: PlayerState = {
 const PlayerContext = createContext<{
   state: PlayerState;
   dispatch: React.Dispatch<PlayerAction>;
-  audioRef: React.RefObject<HTMLAudioElement>;
+  audioRef: React.RefObject<HTMLAudioElement | null>;
 } | null>(null);
+
 
 function playerReducer(state: PlayerState, action: PlayerAction): PlayerState {
   switch (action.type) {
