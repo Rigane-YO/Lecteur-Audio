@@ -62,7 +62,7 @@ export function Playlist() {
       {state.queue.length > 0 && (
         <div className="mb-8">
           <h3 className="text-lg font-semibold mb-4 dark:text-white">Queue</h3>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-300">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow transition-colors duration-300">
             <ul className="divide-y dark:divide-gray-700">
               {state.queue.map((track) => (
                 <li
