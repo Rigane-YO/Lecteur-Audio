@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
+import { createContext, useContext, useReducer, useRef, useEffect } from 'react';
 import { PlayerState, PlayerAction} from '../types';
 import { getSettings, saveSettings } from '../db';
 
