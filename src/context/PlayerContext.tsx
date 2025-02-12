@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useRef, useEffect } from 'react';
 import { PlayerState, PlayerAction} from '../types';
+import { getSettings, saveSettings } from '../db';
 
 const initialState: PlayerState = {
   currentTrack: null,
@@ -63,27 +64,31 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(playerReducer, initialState);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  // Load saved state from localStorage
+  // Load saved state from IndexedDB
   useEffect(() => {
-    const savedState = localStorage.getItem('playerState');
-    if (savedState) {
-      const { playlist, isDarkMode } = JSON.parse(savedState);
-      dispatch({ type: 'SET_PLAYLIST', payload: playlist });
-      if (isDarkMode) {
+    const loadSettings = async () => {
+      const savedSettings = await getSettings('playerSettings');
+      if (savedSettings) {
+        const { playlist, isDarkMode } = savedSettings;
+        if (playlist) dispatch({ type: 'SET_PLAYLIST', payload: playlist });
+        if (isDarkMode) dispatch({ type: 'TOGGLE_DARK_MODE' });
+      }
+
+      // Check system dark mode preference
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (prefersDark && !savedSettings?.isDarkMode) {
         dispatch({ type: 'TOGGLE_DARK_MODE' });
       }
-    }
+    };
+    loadSettings();
   }, []);
 
-  // Save state to localStorage
+  // Save state to IndexedDB
   useEffect(() => {
-    localStorage.setItem(
-      'playerState',
-      JSON.stringify({
-        playlist: state.playlist,
-        isDarkMode: state.isDarkMode,
-      })
-    );
+    saveSettings('playerSettings', {
+      playlist: state.playlist,
+      isDarkMode: state.isDarkMode,
+    });
   }, [state.playlist, state.isDarkMode]);
 
   // Handle dark mode
@@ -94,6 +99,17 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
       document.documentElement.classList.remove('dark');
     }
   }, [state.isDarkMode]);
+
+  // Listen for system dark mode changes
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      dispatch({ type: 'TOGGLE_DARK_MODE' });
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   // Handle audio playback
   useEffect(() => {
